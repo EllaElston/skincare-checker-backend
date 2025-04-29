@@ -38,6 +38,8 @@ For each ingredient, return a JSON array of objects with:
 Respond *only* with the JSON array.
 `.trim();
 
+console.log('🔍 PROMPT:', prompt);
+
     // call OpenAI
     const response = await openai.chat.completions.create({
       model:       'gpt-4o',     // or 'gpt-3.5-turbo'
@@ -49,11 +51,20 @@ Respond *only* with the JSON array.
     });
 
     // log raw text so we can debug in Render’s logs
-    console.log('✉️ RAW MODEL OUTPUT:', response.choices[0].message.content);
+   // … after you await the OpenAI call …
+let raw = response.choices[0].message.content;
 
-    // parse and send back
-    const data = JSON.parse(response.choices[0].message.content);
-    res.json(data);
+// 1) strip any leading ```json or ```
+// 2) strip any trailing ```
+raw = raw
+  .replace(/^```(?:json)?\s*/, '')
+  .replace(/\s*```$/, '');
+
+console.log('✉️CLEANED MODEL OUTPUT:', raw);
+
+const data = JSON.parse(raw);
+res.json(data);
+
 
   } catch (err) {
     console.error(err);
