@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ingredient Checker</title>
+  <style>
+    body { font-family: sans-serif; padding: 1rem; }
+    label, input, button { display: block; margin: .5rem 0; }
+    #results { margin-top: 1rem; }
+    .error { color: red; }
+    .item { border-bottom: 1px solid #ccc; padding: .5rem 0; }
+    .item:last-child { border: none; }
+  </style>
+</head>
+<body>
+  <h1>Ingredient Checker</h1>
+  <form id="checker-form">
+    <label for="ingredients">Enter ingredients (comma-separated):</label>
+    <input id="ingredients" type="text" placeholder="e.g. Water, Glycerin, Olive Oil" required />
+    <button type="submit">Check</button>
+  </form>
+
+  <div id="results"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
