@@ -19,7 +19,7 @@ form.addEventListener('submit', async (e) => {
 
   try {
     // ←– point to your local API
-    const res = await fetch('http://localhost:3000/check', {
+    const res = await fetch('https://ingredient-checker-backend.onrender.com/check', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ingredients: ing }),
