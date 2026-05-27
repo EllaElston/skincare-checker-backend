@@ -52,6 +52,15 @@ const DEFAULT_HABITS = [
   { name: "stretch",   days: [false,false,false,false,false,false,false] },
 ];
 
+const DEFAULT_GOALS = [
+  { text: "post 3× a week consistently", pct: 40 },
+  { text: "grow the email list to 5k",   pct: 30 },
+  { text: "read 10 books this year",      pct: 20 },
+];
+
+const CONTENT_DAYS = ["mon","tue","wed","thu","fri","sat","sun"];
+const DEFAULT_CONTENT_WEEK = CONTENT_DAYS.map(() => ({ text: "", posted: false }));
+
 const QUICK_LINK_DEFS = [
   { key: "admin",    label: "Month Tracker Admin",   icon: "✦", placeholder: "https://notion.so/your-admin-board" },
   { key: "client",   label: "Client Portal",         icon: "✿", placeholder: "https://your-client-portal" },
@@ -310,6 +319,140 @@ function updateHabitPercent(row, habit) {
   row.querySelector(".habit-percent").textContent = pct + "%";
 }
 
+/* ─────────  GOALS  ───────── */
+function getGoals() { return store.get("goals", DEFAULT_GOALS); }
+function setGoals(g) { store.set("goals", g); }
+
+function renderGoals() {
+  const wrap = document.getElementById("goals-list");
+  if (!wrap) return;
+  const goals = getGoals();
+  wrap.innerHTML = "";
+
+  goals.forEach((goal, idx) => {
+    const row = document.createElement("div");
+    row.className = "goal-row";
+
+    const name = document.createElement("span");
+    name.className = "goal-name";
+    name.textContent = goal.text;
+    name.contentEditable = "true";
+    name.spellcheck = false;
+    name.addEventListener("blur", () => {
+      const list = getGoals();
+      const t = name.textContent.trim();
+      if (!t) list.splice(idx, 1);
+      else    list[idx].text = t;
+      setGoals(list);
+      renderGoals();
+    });
+    name.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); name.blur(); }
+    });
+    row.appendChild(name);
+
+    const pctLabel = document.createElement("span");
+    pctLabel.className = "goal-pct";
+    pctLabel.textContent = goal.pct + "%";
+    row.appendChild(pctLabel);
+
+    const barWrap = document.createElement("div");
+    barWrap.className = "goal-bar-wrap";
+
+    const slider = document.createElement("input");
+    slider.type = "range";
+    slider.min = "0";
+    slider.max = "100";
+    slider.value = goal.pct;
+    slider.className = "goal-slider";
+    paintSlider(slider);
+    slider.addEventListener("input", () => {
+      pctLabel.textContent = slider.value + "%";
+      paintSlider(slider);
+    });
+    slider.addEventListener("change", () => {
+      const list = getGoals();
+      list[idx].pct = Number(slider.value);
+      setGoals(list);
+    });
+    barWrap.appendChild(slider);
+
+    const rm = document.createElement("button");
+    rm.className = "remove";
+    rm.type = "button";
+    rm.innerHTML = "✕";
+    rm.title = "remove";
+    rm.addEventListener("click", () => {
+      const list = getGoals();
+      list.splice(idx, 1);
+      setGoals(list);
+      renderGoals();
+    });
+    barWrap.appendChild(rm);
+
+    row.appendChild(barWrap);
+    wrap.appendChild(row);
+  });
+}
+
+function paintSlider(slider) {
+  const pct = Number(slider.value);
+  slider.style.background =
+    `linear-gradient(to right, var(--blush-3) ${pct}%, var(--line) ${pct}%)`;
+}
+
+/* ─────────  WEEKLY CONTENT PLANNER  ───────── */
+function getContentWeek() {
+  const saved = store.get("content-week", null);
+  if (!Array.isArray(saved) || saved.length !== 7) return DEFAULT_CONTENT_WEEK.slice();
+  return saved;
+}
+function setContentWeek(w) { store.set("content-week", w); }
+
+function renderContentWeek() {
+  const wrap = document.getElementById("content-planner");
+  if (!wrap) return;
+  const week = getContentWeek();
+  wrap.innerHTML = "";
+
+  CONTENT_DAYS.forEach((day, idx) => {
+    const row = document.createElement("div");
+    row.className = "content-day";
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.className = "content-posted";
+    cb.checked = !!week[idx].posted;
+    cb.title = "mark posted";
+    cb.addEventListener("change", () => {
+      const w = getContentWeek();
+      w[idx].posted = cb.checked;
+      setContentWeek(w);
+      input.classList.toggle("posted-text", cb.checked);
+    });
+    row.appendChild(cb);
+
+    const dayName = document.createElement("span");
+    dayName.className = "day-name";
+    dayName.textContent = day;
+    row.appendChild(dayName);
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.value = week[idx].text;
+    input.placeholder = "—";
+    input.classList.toggle("posted-text", !!week[idx].posted);
+    input.addEventListener("input", () => {
+      const w = getContentWeek();
+      w[idx].text = input.value;
+      setContentWeek(w);
+    });
+    row.appendChild(input);
+
+    wrap.appendChild(row);
+  });
+}
+
 /* ─────────  QUICK LINKS  ───────── */
 function getLinks() { return store.get("links", {}); }
 function setLinks(l) { store.set("links", l); }
@@ -476,9 +619,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   ["am-routine", "pm-routine", "packing", "today-tasks"].forEach(renderList);
   renderHabits();
+  renderGoals();
+  renderContentWeek();
   wireListAddRows();
   renderQuickLinks();
   renderEmbeds();
+
+  // add-goal form
+  const goalForm = document.querySelector("[data-add-goal]");
+  if (goalForm) {
+    goalForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const input = goalForm.querySelector("input");
+      const text = input.value.trim();
+      if (!text) return;
+      const goals = getGoals();
+      goals.push({ text, pct: 0 });
+      setGoals(goals);
+      renderGoals();
+      input.value = "";
+    });
+  }
+
+  document.getElementById("clear-content-week").addEventListener("click", () => {
+    if (!confirm("Clear this week's content plan?")) return;
+    setContentWeek(DEFAULT_CONTENT_WEEK.slice().map(() => ({ text: "", posted: false })));
+    renderContentWeek();
+  });
 
   document.getElementById("settings-fab").addEventListener("click", () => openSettings());
   document.getElementById("close-settings").addEventListener("click", closeSettings);

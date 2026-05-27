@@ -11,6 +11,14 @@
 </head>
 <body>
 
+  <nav class="app-nav">
+    <span class="app-nav-brand serif-italic">my hq <span class="heart">♡</span></span>
+    <div class="app-nav-links">
+      <a href="/personal/">dashboard</a>
+      <a href="/inbox/" class="active">voice inbox</a>
+    </div>
+  </nav>
+
   <header class="hero">
     <p class="eyebrow">voice inbox</p>
     <h1>say it once, <span class="serif-italic">sort it everywhere</span> <span class="heart">♡</span></h1>
@@ -96,6 +104,11 @@
           <li>Copy the page/database ID from its URL. Looks like a 32-character hex string with dashes. E.g. <code>https://notion.so/My-Page-<strong>23a4f8…b1c</strong></code> — that bolded part is the ID.</li>
         </ol>
       </details>
+
+      <label class="auto-send-toggle">
+        <input type="checkbox" id="auto-send-toggle" />
+        <span><strong>⚡ Auto-send trusted jars</strong> — pieces routed to a jar you've marked "trusted" go straight to Notion, skipping the review step. Anything untrusted still waits for you.</span>
+      </label>
 
       <div class="jars-list" id="jars-list"></div>
 

@@ -10,6 +10,15 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <!-- ─────────  APP NAV  ───────── -->
+  <nav class="app-nav">
+    <span class="app-nav-brand serif-italic">my hq <span class="heart">♡</span></span>
+    <div class="app-nav-links">
+      <a href="/personal/" class="active">dashboard</a>
+      <a href="/inbox/">voice inbox</a>
+    </div>
+  </nav>
+
   <!-- ─────────  HEADER  ───────── -->
   <header class="hero">
     <div class="hero-inner">
@@ -141,6 +150,27 @@
       <form class="add-row" data-add-to="today-tasks">
         <input type="text" placeholder="+ add a task" required />
       </form>
+    </section>
+
+    <!-- ===== GOALS + CONTENT WEEK ROW ===== -->
+    <section class="card span-2" data-card="goals">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">in progress</span> goals</h2>
+      </header>
+      <p class="card-sub">drag the slider as you make progress</p>
+      <div class="goals-list" id="goals-list"></div>
+      <form class="add-row" data-add-goal>
+        <input type="text" placeholder="+ add a goal" required />
+      </form>
+    </section>
+
+    <section class="card span-2" data-card="content-planner">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">this week</span> content</h2>
+        <button class="ghost-btn" id="clear-content-week">clear week</button>
+      </header>
+      <p class="card-sub">Skincare Made Simple · what drops each day</p>
+      <div class="content-planner" id="content-planner"></div>
     </section>
 
   </main>

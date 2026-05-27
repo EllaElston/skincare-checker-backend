@@ -57,12 +57,16 @@ const DEFAULT_JARS = [
 function getJars() { return store.get("jars", DEFAULT_JARS); }
 function setJars(j) { store.set("jars", j); }
 
+function getAutoSend() { return store.get("autoSend", false); }
+function setAutoSend(v) { store.set("autoSend", !!v); }
+
 /* ─────────  STATE  ───────── */
 let mediaRecorder = null;
 let recordedChunks = [];
 let recordStart = 0;
 let timerInterval = null;
 let routedItems = []; // [{ jar, content }]
+let pendingAutoResults = []; // results from items already auto-sent this run
 
 /* ─────────  STEP NAVIGATION  ───────── */
 function showStep(id) {
@@ -186,11 +190,48 @@ async function routeTranscript() {
       throw new Error(err.error || `route failed (${res.status})`);
     }
     const { items } = await res.json();
-    routedItems = items || [];
-    if (routedItems.length === 0) {
+    const allItems = items || [];
+    if (allItems.length === 0) {
       toast("Nothing came back from the router. Try editing the transcript.");
       return;
     }
+
+    pendingAutoResults = [];
+
+    // ── auto-route: send pieces bound for trusted jars straight away ──
+    if (getAutoSend()) {
+      const jarByName = Object.fromEntries(jars.map(j => [j.name.toLowerCase(), j]));
+      const trustedPayload = [];
+      const review = [];
+      allItems.forEach(it => {
+        const jar = jarByName[(it.jar || "").toLowerCase()];
+        if (jar && jar.trusted && jar.id) {
+          trustedPayload.push({ jar: it.jar, content: it.content, target: { type: jar.type || "page", id: jar.id } });
+        } else {
+          review.push(it);
+        }
+      });
+
+      if (trustedPayload.length > 0) {
+        try { pendingAutoResults = await postDispatch(trustedPayload); }
+        catch (e) { toast("Auto-send failed: " + e.message); review.push(...trustedPayload.map(p => ({ jar: p.jar, content: p.content }))); pendingAutoResults = []; }
+      }
+
+      if (review.length === 0) {
+        renderResults(pendingAutoResults);
+        showStep("step-done");
+        return;
+      }
+
+      routedItems = review;
+      renderPreview();
+      showStep("step-preview");
+      if (trustedPayload.length > 0) toast(`${trustedPayload.length} sent automatically · review the rest`);
+      return;
+    }
+
+    // ── normal: review everything before sending ──
+    routedItems = allItems;
     renderPreview();
     showStep("step-preview");
   } catch (err) {
@@ -259,6 +300,20 @@ function renderPreview() {
 }
 
 /* ─────────  DISPATCH  ───────── */
+async function postDispatch(items) {
+  const res = await fetch(API_BASE + "/api/inbox/dispatch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ items }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `dispatch failed (${res.status})`);
+  }
+  const { results } = await res.json();
+  return results || [];
+}
+
 async function dispatchToNotion() {
   const jars = getJars();
   const jarByName = Object.fromEntries(jars.map(j => [j.name.toLowerCase(), j]));
@@ -277,11 +332,14 @@ async function dispatchToNotion() {
     });
   });
 
-  if (payload.length === 0) { toast("Nothing checked to send."); return; }
-  const missing = payload.filter(p => !p.target);
-  if (missing.length === payload.length) {
-    toast("None of these jars have a Notion ID. Open jars to configure.");
-    return;
+  if (payload.length === 0 && pendingAutoResults.length === 0) { toast("Nothing checked to send."); return; }
+
+  if (payload.length > 0) {
+    const missing = payload.filter(p => !p.target);
+    if (missing.length === payload.length) {
+      toast("None of these jars have a Notion ID. Open jars to configure.");
+      return;
+    }
   }
 
   const sendBtn = document.getElementById("dispatch-btn");
@@ -289,17 +347,8 @@ async function dispatchToNotion() {
   sendBtn.textContent = "sending…";
 
   try {
-    const res = await fetch(API_BASE + "/api/inbox/dispatch", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ items: payload }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.error || `dispatch failed (${res.status})`);
-    }
-    const { results } = await res.json();
-    renderResults(results);
+    const results = payload.length > 0 ? await postDispatch(payload) : [];
+    renderResults([...pendingAutoResults, ...results]);
     showStep("step-done");
   } catch (err) {
     console.error(err);
@@ -361,6 +410,10 @@ function renderJarsEditor() {
         <input class="jar-desc" data-field="description" data-idx="${idx}"
                value="${escAttr(j.description || "")}"
                placeholder="describe what belongs in this jar — the AI uses this to route" />
+        <label class="jar-trust">
+          <input type="checkbox" data-field="trusted" data-idx="${idx}" ${j.trusted ? "checked" : ""} />
+          <span>⚡ trusted — auto-send (skip preview)</span>
+        </label>
       </div>
     `;
     wrap.appendChild(row);
@@ -371,7 +424,7 @@ function renderJarsEditor() {
       const idx   = Number(e.target.dataset.idx);
       const field = e.target.dataset.field;
       const jars2 = getJars();
-      jars2[idx][field] = e.target.value.trim();
+      jars2[idx][field] = e.target.type === "checkbox" ? e.target.checked : e.target.value.trim();
       setJars(jars2);
     });
   });
@@ -444,6 +497,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("text-input").value = "";
     document.getElementById("transcript-text").value = "";
     routedItems = [];
+    pendingAutoResults = [];
     showStep("step-capture");
   });
 
@@ -453,6 +507,11 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("save-jars").addEventListener("click", saveJars);
   document.getElementById("reset-jars").addEventListener("click", resetJars);
   document.getElementById("add-jar").addEventListener("click", addJar);
+
+  // auto-send toggle
+  const autoToggle = document.getElementById("auto-send-toggle");
+  autoToggle.checked = getAutoSend();
+  autoToggle.addEventListener("change", () => setAutoSend(autoToggle.checked));
 
   document.getElementById("settings-modal").addEventListener("click", (e) => {
     if (e.target.id === "settings-modal") closeSettings();
