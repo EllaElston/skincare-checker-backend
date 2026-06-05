@@ -12,12 +12,17 @@ const { Client: NotionClient } = require('@notionhq/client');
 
 const app = express();
 
-// 1) CORS setup: allow only your Netlify site (and localhost for dev)
+// 1) CORS setup: allow your Netlify site, localhost for dev, plus
+//    anything listed in ALLOWED_ORIGINS (comma-separated) for deploys.
+const envOrigins = (process.env.ALLOWED_ORIGINS || '')
+  .split(',').map(s => s.trim()).filter(Boolean);
+
 const allowedOrigins = [
   'https://cool-taffy-c547bb.netlify.app',
   'http://localhost:3000',
   'http://localhost:8765',
   'http://127.0.0.1:8765',
+  ...envOrigins,
 ];
 
 app.use(cors({

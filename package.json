@@ -6,6 +6,9 @@
   "scripts": {
     "start": "node index.js"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
     "@notionhq/client": "^5.22.0",
     "cors": "^2.8.5",
