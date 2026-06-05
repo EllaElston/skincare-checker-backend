@@ -6,10 +6,15 @@
   "scripts": {
     "start": "node index.js"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
+    "@notionhq/client": "^5.22.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "multer": "^2.1.1",
     "openai": "^4.95.1"
   }
 }

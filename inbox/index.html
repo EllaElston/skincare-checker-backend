@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Voice Inbox → Notion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <nav class="app-nav">
+    <span class="app-nav-brand serif-italic">my hq <span class="heart">♡</span></span>
+    <div class="app-nav-links">
+      <a href="/personal/">dashboard</a>
+      <a href="/inbox/" class="active">voice inbox</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <p class="eyebrow">voice inbox</p>
+    <h1>say it once, <span class="serif-italic">sort it everywhere</span> <span class="heart">♡</span></h1>
+    <p class="sub">Record a ramble. I'll transcribe it, split it into your jars, and drop each piece into the right Notion page.</p>
+  </header>
+
+  <main class="stage">
+
+    <!-- ───── STEP 1: CAPTURE ───── -->
+    <section class="step" id="step-capture">
+      <div class="record-card">
+        <button class="record-btn" id="record-btn" aria-label="Start recording">
+          <span class="mic-icon">●</span>
+        </button>
+        <p class="record-state" id="record-state">tap to start</p>
+        <p class="record-time" id="record-time">00:00</p>
+      </div>
+
+      <details class="text-fallback">
+        <summary>or type / paste instead</summary>
+        <textarea id="text-input" placeholder="dump your thoughts here…" rows="6"></textarea>
+        <button class="primary-btn" id="text-submit">use this text</button>
+      </details>
+    </section>
+
+    <!-- ───── STEP 2: TRANSCRIPT ───── -->
+    <section class="step hidden" id="step-transcript">
+      <header class="step-head">
+        <h2><span class="serif-italic">transcript</span></h2>
+        <button class="ghost-btn" id="back-to-capture">← record again</button>
+      </header>
+      <textarea id="transcript-text" class="transcript-box" rows="6"></textarea>
+      <p class="muted small">edit anything that's wrong, then sort it.</p>
+      <div class="row-actions">
+        <button class="primary-btn" id="sort-btn">sort into jars <span class="arrow">→</span></button>
+      </div>
+    </section>
+
+    <!-- ───── STEP 3: ROUTED PREVIEW ───── -->
+    <section class="step hidden" id="step-preview">
+      <header class="step-head">
+        <h2><span class="serif-italic">where it's going</span></h2>
+        <button class="ghost-btn" id="back-to-transcript">← edit transcript</button>
+      </header>
+      <p class="muted small">review, edit, uncheck anything you don't want sent, then drop it in Notion.</p>
+      <div class="preview-list" id="preview-list"></div>
+      <div class="row-actions">
+        <button class="primary-btn" id="dispatch-btn">send to Notion <span class="arrow">↗</span></button>
+      </div>
+    </section>
+
+    <!-- ───── STEP 4: DONE ───── -->
+    <section class="step hidden" id="step-done">
+      <div class="done-card">
+        <p class="done-icon serif-italic">done ♡</p>
+        <p class="muted">all set — your jars have been updated.</p>
+        <ul class="results" id="dispatch-results"></ul>
+        <button class="primary-btn" id="reset-btn">new note</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ───── SETTINGS FAB + MODAL ───── -->
+  <button class="settings-fab" id="settings-fab" title="Settings">
+    <span class="serif-italic">jars</span>
+  </button>
+
+  <div class="modal" id="settings-modal" hidden>
+    <div class="modal-card">
+      <header class="modal-head">
+        <h2 class="serif-italic">your jars</h2>
+        <button class="ghost-btn" id="close-settings">close ✕</button>
+      </header>
+      <p class="muted small">Each jar = one Notion destination. Name it, describe what belongs in it (the AI uses this to route), and paste the Notion page/database ID.</p>
+
+      <details class="how-to">
+        <summary>how to set up Notion (one-time)</summary>
+        <ol>
+          <li>Go to <a href="https://www.notion.so/profile/integrations" target="_blank" rel="noopener">notion.so/profile/integrations</a> → <strong>+ New integration</strong> → "Internal" → copy the <strong>secret token</strong>.</li>
+          <li>Add it to your server's <code>.env</code> as <code>NOTION_TOKEN=secret_…</code> and restart the backend.</li>
+          <li>For each Notion page or database you want to use as a jar: open it → top-right <strong>•••</strong> → <strong>Connect to</strong> → pick your integration.</li>
+          <li>Copy the page/database ID from its URL. Looks like a 32-character hex string with dashes. E.g. <code>https://notion.so/My-Page-<strong>23a4f8…b1c</strong></code> — that bolded part is the ID.</li>
+        </ol>
+      </details>
+
+      <label class="auto-send-toggle">
+        <input type="checkbox" id="auto-send-toggle" />
+        <span><strong>⚡ Auto-send trusted jars</strong> — pieces routed to a jar you've marked "trusted" go straight to Notion, skipping the review step. Anything untrusted still waits for you.</span>
+      </label>
+
+      <div class="jars-list" id="jars-list"></div>
+
+      <button class="ghost-btn add-jar" id="add-jar">+ add a jar</button>
+
+      <footer class="modal-foot">
+        <button class="ghost-btn danger" id="reset-jars">reset to defaults</button>
+        <button class="primary-btn" id="save-jars">save jars</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- ───── TOAST ───── -->
+  <div class="toast" id="toast" hidden></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

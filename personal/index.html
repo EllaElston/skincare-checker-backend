@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>My HQ — Personal Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- ─────────  APP NAV  ───────── -->
+  <nav class="app-nav">
+    <span class="app-nav-brand serif-italic">my hq <span class="heart">♡</span></span>
+    <div class="app-nav-links">
+      <a href="/personal/" class="active">dashboard</a>
+      <a href="/inbox/">voice inbox</a>
+    </div>
+  </nav>
+
+  <!-- ─────────  HEADER  ───────── -->
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="hero-left">
+        <p class="hero-eyebrow"><span id="today-date">—</span> &nbsp;·&nbsp; <span id="today-time">—</span></p>
+        <h1>Hi, <span class="serif-italic" contenteditable="true" data-store="greeting-name">gorgeous</span> <span class="heart">♡</span></h1>
+        <p class="hero-quote">
+          <span class="serif-italic">today's quote · </span>
+          <span contenteditable="true" data-store="quote">She glows because she shows up for herself every day.</span>
+        </p>
+      </div>
+      <div class="hero-right">
+        <div class="progress-card">
+          <p class="progress-label serif-italic">this month</p>
+          <p class="progress-month" id="month-name">—</p>
+          <div class="progress-bar"><div class="progress-fill" id="month-progress-fill"></div></div>
+          <p class="progress-meta"><span id="month-days-left">—</span> days left · <span id="month-percent">—</span>%</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────  QUICK LINKS  ───────── -->
+    <nav class="quick-links" id="quick-links">
+      <!-- populated by app.js -->
+    </nav>
+  </header>
+
+  <!-- ─────────  MAIN GRID  ───────── -->
+  <main class="grid">
+
+    <!-- ===== LEFT COLUMN ===== -->
+    <section class="card" data-card="am-routine">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">morning</span> routine</h2>
+        <span class="card-progress" id="am-progress">0%</span>
+      </header>
+      <ul class="checklist" data-list="am-routine"></ul>
+      <form class="add-row" data-add-to="am-routine">
+        <input type="text" placeholder="+ add a step" required />
+      </form>
+    </section>
+
+    <section class="card" data-card="pm-routine">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">evening</span> routine</h2>
+        <span class="card-progress" id="pm-progress">0%</span>
+      </header>
+      <ul class="checklist" data-list="pm-routine"></ul>
+      <form class="add-row" data-add-to="pm-routine">
+        <input type="text" placeholder="+ add a step" required />
+      </form>
+    </section>
+
+    <section class="card" data-card="habits">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">this week</span> habits</h2>
+        <button class="ghost-btn" id="reset-habits">reset week</button>
+      </header>
+      <div class="habit-table" id="habit-table"></div>
+      <form class="add-row" data-add-to="habits">
+        <input type="text" placeholder="+ add a habit" required />
+      </form>
+    </section>
+
+    <!-- ===== MIDDLE COLUMN ===== -->
+    <section class="card span-2" data-card="calendar">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">google</span> calendar</h2>
+        <button class="ghost-btn" data-edit-embed="calendar-embed">edit embed</button>
+      </header>
+      <div class="embed-frame" id="calendar-embed-wrap">
+        <iframe id="calendar-embed" src="" title="Google Calendar" loading="lazy"></iframe>
+        <div class="embed-empty" id="calendar-empty">
+          <p>Paste your Google Calendar <em>embed URL</em> in settings to inlay it here.</p>
+          <p class="micro">Calendar → Settings → your calendar → "Integrate calendar" → copy the iframe src.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card span-2" data-card="content-calendar">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">content</span> calendar</h2>
+        <div class="card-head-right">
+          <a class="ghost-btn" id="content-calendar-open" target="_blank" rel="noopener">open in notion ↗</a>
+          <button class="ghost-btn" data-edit-embed="content-calendar-embed">edit embed</button>
+        </div>
+      </header>
+      <p class="card-sub">Skincare Made Simple · content planning</p>
+      <div class="embed-frame" id="content-calendar-embed-wrap">
+        <iframe id="content-calendar-embed" src="" title="Notion Content Calendar" loading="lazy"></iframe>
+        <div class="embed-empty" id="content-calendar-empty">
+          <p>Paste your Notion content calendar <em>share link</em> in settings to embed it.</p>
+          <p class="micro">Notion page → Share → Publish → copy the public URL.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== RIGHT COLUMN ===== -->
+    <section class="card" data-card="brand-dump">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">brand</span> dump</h2>
+        <span class="autosave-tag" id="brand-saved">saved</span>
+      </header>
+      <p class="card-sub">stream of consciousness · ideas · hooks · captions</p>
+      <textarea
+        class="dump"
+        data-store="brand-dump"
+        placeholder="start typing… anything for the brand. it autosaves."
+      ></textarea>
+    </section>
+
+    <section class="card" data-card="packing">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">farm</span> packing list</h2>
+        <button class="ghost-btn" id="uncheck-packing">uncheck all</button>
+      </header>
+      <ul class="checklist" data-list="packing"></ul>
+      <form class="add-row" data-add-to="packing">
+        <input type="text" placeholder="+ add an item" required />
+      </form>
+    </section>
+
+    <section class="card" data-card="today-tasks">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">today's</span> tasks</h2>
+        <span class="card-progress" id="tasks-progress">0%</span>
+      </header>
+      <ul class="checklist" data-list="today-tasks"></ul>
+      <form class="add-row" data-add-to="today-tasks">
+        <input type="text" placeholder="+ add a task" required />
+      </form>
+    </section>
+
+    <!-- ===== GOALS + CONTENT WEEK ROW ===== -->
+    <section class="card span-2" data-card="goals">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">in progress</span> goals</h2>
+      </header>
+      <p class="card-sub">drag the slider as you make progress</p>
+      <div class="goals-list" id="goals-list"></div>
+      <form class="add-row" data-add-goal>
+        <input type="text" placeholder="+ add a goal" required />
+      </form>
+    </section>
+
+    <section class="card span-2" data-card="content-planner">
+      <header class="card-head">
+        <h2><span class="heart">♡</span> <span class="serif-italic">this week</span> content</h2>
+        <button class="ghost-btn" id="clear-content-week">clear week</button>
+      </header>
+      <p class="card-sub">Skincare Made Simple · what drops each day</p>
+      <div class="content-planner" id="content-planner"></div>
+    </section>
+
+  </main>
+
+  <!-- ─────────  SETTINGS BUTTON + MODAL  ───────── -->
+  <button class="settings-fab" id="settings-fab" title="Settings">
+    <span class="serif-italic">edit</span>
+  </button>
+
+  <div class="modal" id="settings-modal" hidden>
+    <div class="modal-card">
+      <header class="modal-head">
+        <h2 class="serif-italic">settings</h2>
+        <button class="ghost-btn" id="close-settings">close ✕</button>
+      </header>
+      <p class="card-sub">Paste your links once — they save to this browser. Embed URLs are optional.</p>
+
+      <div class="settings-grid" id="settings-grid">
+        <!-- generated by app.js -->
+      </div>
+
+      <footer class="modal-foot">
+        <button class="ghost-btn danger" id="reset-everything">reset everything</button>
+        <button class="primary-btn" id="save-settings">save</button>
+      </footer>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
